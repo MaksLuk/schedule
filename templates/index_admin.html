@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Главная</title>
+<link href="./projects/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+<nav id="sidebar" class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link active" href="#projects">Проекты</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#users">Пользователи</a>
+            </li>
+        </ul>
+        <div class="ms-auto">
+            <a href="{{ url_for('auth.logout') }}">Выход</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid">
+<div class="row">
+<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">    
+    <section id="projects">
+        <div class="container mt-4">
+            <h1>Проекты</h1>
+            <button class="btn btn-primary mb-3" onclick="showForm()">Добавить проект</button>
+            <div id="formDiv" style="display: none;">
+                <form id="formDivForm" action="{{ url_for('projects.insert_project') }}" method="post" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="project_name" class="form-label">Название</label>
+                        <input type="text" class="form-control" id="project_name" name="project_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="project_pass" class="form-label">Код доступа</label>
+                        <input type="password" class="form-control" id="project_pass" name="project_pass" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="project_admin" class="form-label">Администратор</label>
+                        <select class="form-select" id="project_admin" name="project_admin" required>
+                            {%for user in users%} 
+                                <option value="{{ user['id'] }}">{{ user["name"] }}</option>
+                            {%endfor%}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Создать проект</button>
+                </form>
+            </div>
+            
+            <table class="table mt-4">
+                <thead>
+                    <tr>
+                        <th>Название</th>
+                        <th>Ключ доступа</th>
+                        <th>Администратор</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {%for project in projects%} 
+                    <tr>
+                        <td>{{ project["name"] }}</td>
+                        <td>{{ project["password"] }}</td>
+                        <td>{{ project["admin_name"] }}</td>
+                        <td>
+                            <div>
+                                <button class="btn btn-light btn-sm">
+                                    <a href="{{ url_for('projects.project', id=project['id']) }}">Просмотр</a>
+                                </button>
+                            </div>
+                            <div>
+                                <button class="btn btn-light btn-sm">Удалить</button>
+                            </div>
+                        </td>
+                    </tr>
+                    {%endfor%}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section id="users" style="display: none;">
+        <div class="container mt-4">
+            <h1>Пользователи</h1>
+            <table class="table mt-4">
+                <thead>
+                    <tr>
+                        <th>id</th>
+                        <th>Имя</th>
+                        <th>Статус</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {%for user in blocked_users%} 
+                    <tr>
+                        <td>{{ user["id"] }}</td>
+                        <td>{{ user["name"] }}</td>
+                        <td>{{ user["status"] }}</td>
+                        <td>
+                            <div>
+                                <button class="btn btn-light btn-sm">Разблокировать</button>
+                            </div>
+                        </td>
+                    </tr>
+                    {%endfor%}
+                    {%for user in users%} 
+                    <tr>
+                        <td>{{ user["id"] }}</td>
+                        <td>{{ user["name"] }}</td>
+                        <td>{{ user["status"] }}</td>
+                        <td>
+                            <div>
+                                <button class="btn btn-light btn-sm">Заблокировать</button>
+                            </div>
+                        </td>
+                    </tr>
+                    {%endfor%}
+                </tbody>
+            </table>
+        </div>
+    </section>
+    
+</main>
+</div>
+</div>    
+
+<script>
+    document.querySelectorAll('#sidebar .nav-link').forEach(item => {
+        item.addEventListener('click', (event) => {
+            event.preventDefault();
+            document.querySelectorAll('#sidebar .nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            item.classList.add('active');
+    
+            let targetId = item.getAttribute('href');
+            document.querySelectorAll('main section').forEach(section => {
+                section.style.display = 'none';
+            });
+            document.querySelector(targetId).style.display = 'block';
+        });
+    });
+</script>
+
+<script src="./projects/bootstrap_5_3_0.bundle.min.js"></script>
+
+<script>
+flag = true;
+function showForm() {
+    if (flag) {
+        document.getElementById('formDiv').style.display = 'block';
+    }
+    else {
+        document.getElementById('formDiv').style.display = 'none';
+    }
+    flag = !flag;
+}
+</script>
+
+</body>
+</html>

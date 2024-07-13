@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Регистрация</title>
+<link href="./projects/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <h1 class="text-center">Регистрация</h1>
+        <div class="col-md-6">
+            <form id="registrationForm" action="{{ url_for('auth.register') }}" method="post" enctype="multipart/form-data">
+                <div class="mb-3 text-danger">{{ msg }}</div>
+                <div class="mb-3">
+                    <label for="fullName" class="form-label">ФИО</label>
+                    <input type="text" id="fullName" name="fullName" class="form-control" placeholder="Введите ФИО" required>
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" id="email" name="email" class="form-control" placeholder="Введите email" required>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Пароль</label>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="Введите пароль" required>
+                </div>
+                <div class="mb-3">
+                    <label for="confirmPassword" class="form-label">Подтвердите пароль</label>
+                    <input type="password" id="confirmPassword" class="form-control" placeholder="Подтвердите пароль" required>
+                </div>
+                <div class="mb-3">
+                  <div class="custom-control custom-checkbox">
+                    <input type="checkbox" class="custom-control-input" id="agreementCheckbox" required>
+                    <label class="custom-control-label" for="agreementCheckbox">Я даю согласие на обработку моих персональных данных</label>
+                  </div>
+                  
+                  <div class="modal fade" id="agreementModal" tabindex="-1" role="dialog" aria-labelledby="agreementModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <h5 class="modal-title" id="agreementModalLabel">Соглашение об обработке персональных данных </h5>
+                          <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                          </button>
+                        </div>
+                        <div class="modal-body">
+                            <p> Соглашение об обработке персональных данных </p>
+                            <p> Данное соглашение об обработке персональных данных разработано в соответствии с законодательством РФ. </p>
+                            <p> Все лица заполнившие сведения составляющие персональные данные на данном сайте, а также разместившие иную информацию обозначенными действиями подтверждают свое согласие на обработку персональных данных.</p>
+                            <p> Передача данных третьим лицам не предусмотрена. </p>
+                            <p> Все данные, заполненные Гражданином в личном кабинете, являются непубличными и используются строго для функционирования данного сайта, а именно: </p>
+                            <p> - для автоматического заполнения отчетов Гражданина, предоставляемых участником в адрес организаторов различных радиолюбительских соревнований; </p>
+                            <p> - при автозачете для различных радиолюбительских дипломных программ. </p>
+                            <p> Под персональными данными Гражданина понимается нижеуказанная анкетная информация: Фамилия, Имя, Отчество, Почтовый адрес, E-mail. </p>
+                            <p> Гражданин предоставляет контактную информацию для получения наград по почте от организаторов контестов, новостей и уведомлений по E-mail. </p>
+                            <p> Гражданин, принимая настоящее Соглашение, выражает свою заинтересованность и полное согласие, что обработка его персональных данных может включать в себя следующие действия: </p>
+                            <p> сбор, систематизацию, хранение. использование, уничтожение. </p>
+                            <p> Гражданин гарантирует: информация, им предоставленная, является полной, точной и достоверной; </p>
+                            <p> при предоставлении информации не нарушается действующее законодательство РФ, законные права, интересы третьих лиц; </p>
+                            <p> вся предоставленная информация заполнена Гражданином в отношении себя лично. </p>
+                            <p>  </p>
+                            <p> Соглашение принято Вами </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+            </form>
+            <div class="mt-3">
+                <a href="{{url_for('auth.login')}}">Уже есть аккаунт? Авторизация</a>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="./projects/jquery-3.5.1.slim.min.js"></script>
+<script src="./projects/popper.min.js"></script>
+<script src="./projects/bootstrap_4_5_2.bundle.min.js"></script>
+<script>
+document.getElementById('registrationForm').addEventListener('submit', function(event) {
+    const password = document.getElementById('password').value;
+    const passwordRegex = /^(?=.*[0-9])(?=.*[a-zA-Z]).{8,}$/;
+    if (!passwordRegex.test(password)) {
+        alert('Пароль должен быть длиннее 8 символов, состоять из латинских букв и цифр!');
+        event.preventDefault();
+        return;
+    }
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    if (password !== confirmPassword) {
+        alert('Пароль и подтверждение пароля не совпадают!');
+        event.preventDefault();
+        return;
+    }
+});
+$('#agreementCheckbox').change(function() {
+    if ($(this).is(':checked')) {
+        $('#agreementModal').modal('show');
+    } else {
+        $('#agreementModal').modal('hide');
+    }
+});
+</script>
+</body>
+</html>

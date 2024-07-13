@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ввод пароля</title>
+    <link href="/projects/bootstrap.min.css" rel="stylesheet">
+    <style>
+        #sidebar {
+            height: 75px;
+        }
+        .sidebar {
+          position: fixed;
+          width: 120px;
+          top: 50px;
+          bottom: 0;
+          left: 0;
+          z-index: 100;
+          padding: 58px 0 0;
+          box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+        }
+        .sidebar2 {
+          position: fixed;
+          width: 120px;
+          top: 75px;
+          bottom: 0;
+          left: 120px;
+          z-index: 100;
+          padding: 58px 0 0;
+          background-color: #2c2c2c;
+          box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+        }
+        .sidebar3 {
+          position: fixed;
+          width: 120px;
+          top: 75px;
+          bottom: 0;
+          left: 240px;
+          z-index: 100;
+          padding: 58px 0 0;
+          background-color: #363636;
+          box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+        }
+      </style>
+</head>
+<body>
+
+<nav id="sidebar" class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link active" href="#main">Данные</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#workers">Работники</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#workbench">Расписание</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<div class="container-fluid">
+<div class="row">
+<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4" id="first-level-main"> 
+    <section id="main" class="first-level-section">
+        <div class="container mt-4">
+            <h1>Главная</h1>
+
+            <h3>Факультеты</h3>
+            <button class="btn btn-primary mb-3" onclick="showForm_add_faculty()">Добавить факультет</button>
+            <script>
+                flag_add_faculty = true;
+                function showForm_add_faculty() {
+                    if (flag_add_faculty) {
+                        document.getElementById('add_faculty_div').style.display = 'block';
+                    }
+                    else {
+                        document.getElementById('add_faculty_div').style.display = 'none';
+                    }
+                    flag_add_faculty = !flag_add_faculty;
+                }
+            </script>
+            <div id="add_faculty_div" style="display: none;">
+                <form id="add_faculty" action="{{ url_for('projects.insert_faculty') }}" method="post">
+                    <input type="text" class="form-control" name="project_id" style="display: none;" value="{{ project_id }}">
+                    <div class="mb-3">
+                        <label for="faculty_name" class="form-label">Название</label>
+                        <input type="text" class="form-control" id="faculty_name" name="faculty_name" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Добавить</button>
+                </form>
+            </div>
+            <table class="table mt-4">
+                <thead>
+                    <tr>
+                        <th>Название</th>
+                        <th>Изменить</th>
+                        <th>Удалить</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {%for faculty in faculties%} 
+                    <tr>
+                        <td>{{ faculty['name'] }}</td>
+                        <td>
+                            <div><button class="btn btn-light btn-sm">Изменить</button></div>
+                        </td>
+                        <td>
+                            <div><button class="btn btn-light btn-sm">Удалить</button></div>
+                        </td>
+                    </tr>
+                    {%endfor%}
+                </tbody>
+            </table>
+
+            <h3>Кафедры</h3>
+            <button class="btn btn-primary mb-3" onclick="showForm_add_department()">Добавить кафедру</button>
+            <script>
+                flag_add_department = true;
+                function showForm_add_department() {
+                    if (flag_add_department) {
+                        document.getElementById('add_department_div').style.display = 'block';
+                    }
+                    else {
+                        document.getElementById('add_department_div').style.display = 'none';
+                    }
+                    flag_add_department = !flag_add_department;
+                }
+            </script>
+            <div id="add_department_div" style="display: none;">
+                <form id="add_department" action="{{ url_for('projects.insert_department') }}" method="post">
+                    <input type="text" class="form-control" name="project_id" style="display: none;" value="{{ project_id }}">
+                    <div class="mb-3">
+                        <label for="department_name" class="form-label">Название</label>
+                        <input type="text" class="form-control" id="department_name" name="department_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="department_faculty" class="form-label">Факультет</label>
+                        <select class="form-select" id="department_faculty" name="department_faculty" required>
+                            {%for faculty in faculties%} 
+                                <option value="{{ faculty['id'] }}">{{ faculty["name"] }}</option>
+                            {%endfor%}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Добавить</button>
+                </form>
+            </div>
+            <table class="table mt-4">
+                <thead>
+                    <tr>
+                        <th>Название</th>
+                        <th>Факультет</th>
+                        <th>Изменить</th>
+                        <th>Удалить</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {%for department in departments%} 
+                    <tr>
+                        <td>{{ department['name'] }}</td>
+                        <td>{{ department['faculty_name'] }}</td>
+                        <td>
+                            <div><button class="btn btn-light btn-sm">Изменить</button></div>
+                        </td>
+                        <td>
+                            <div><button class="btn btn-light btn-sm">Удалить</button></div>
+                        </td>
+                    </tr>
+                    {%endfor%}
+                </tbody>
+            </table>
+
+            <h3>Специальности</h3>
+            <button class="btn btn-primary mb-3" onclick="showForm_add_spec()">Добавить специальность</button>
+            <script>
+                flag_add_scpec = true;
+                function showForm_add_spec() {
+                    if (flag_add_scpec) {
+                        document.getElementById('add_spec_div').style.display = 'block';
+                    }
+                    else {
+                        document.getElementById('add_spec_div').style.display = 'none';
+                    }
+                    flag_add_scpec = !flag_add_scpec;
+                }
+            </script>
+            <div id="add_spec_div" style="display: none;">
+                <form id="add_spec" action="{{ url_for('projects.insert_spec') }}" method="post">
+                    <input type="text" class="form-control" name="project_id" style="display: none;" value="{{ project_id }}">
+                    <div class="mb-3">
+                        <label for="spec_name" class="form-label">Название</label>
+                        <input type="text" class="form-control" id="spec_name" name="spec_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="spec_department" class="form-label">Кафедра</label>
+                        <select class="form-select" id="spec_department" name="spec_department" required>
+                            {%for department in departments%} 
+                                <option value="{{ department['id'] }}">{{ department["name"] }}</option>
+                            {%endfor%}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Добавить</button>
+                </form>
+            </div>
+            <table class="table mt-4">
+                <thead>
+                    <tr>
+                        <th>Название</th>
+                        <th>Кафдера</th>
+                        <th>Изменить</th>
+                        <th>Удалить</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {%for spec in specs%} 
+                    <tr>
+                        <td>{{ spec['name'] }}</td>
+                        <td>{{ spec['department_name'] }}</td>
+                        <td>
+                            <div><button class="btn btn-light btn-sm">Изменить</button></div>
+                        </td>
+                        <td>
+                            <div><button class="btn btn-light btn-sm">Удалить</button></div>
+                        </td>
+                    </tr>
+                    {%endfor%}
+                </tbody>
+            </table>
+
+            <h3>Группы</h3>
+            <button class="btn btn-primary mb-3" onclick="showForm_add_group()">Добавить группу</button>
+            <script>
+                flag_add_group = true;
+                function showForm_add_group() {
+                    if (flag_add_group) {
+                        document.getElementById('add_group_div').style.display = 'block';
+                    }
+                    else {
+                        document.getElementById('add_group_div').style.display = 'none';
+                    }
+                    flag_add_group = !flag_add_group;
+                }
+            </script>
+            <div id="add_group_div" style="display: none;">
+                <form id="add_group" action="{{ url_for('projects.insert_group') }}" method="post">
+                    <input type="text" class="form-control" name="project_id" style="display: none;" value="{{ project_id }}">
+                    <div class="mb-3">
+                        <label for="group_name" class="form-label">Название</label>
+                        <input type="text" class="form-control" id="group_name" name="group_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="group_students" class="form-label">Число студентов</label>
+                        <input type="number" min="15" max="40" class="form-control" id="group_students" name="group_students" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="group_spec" class="form-label">Специальность</label>
+                        <select class="form-select" id="group_spec" name="group_spec" required>
+                            {%for spec in specs%} 
+                                <option value="{{ spec['id'] }}">{{ spec["name"] }}</option>
+                            {%endfor%}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Добавить</button>
+                </form>
+            </div>
+            <table class="table mt-4">
+                <thead>
+                    <tr>
+                        <th>Название</th>
+                        <th>Специальность</th>
+                        <th>Изменить</th>
+                        <th>Удалить</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {%for group in groups%} 
+                    <tr>
+                        <td>{{ group['name'] }}</td>
+                        <td>{{ group['spec_name'] }}</td>
+                        <td>
+                            <div><button class="btn btn-light btn-sm">Изменить</button></div>
+                        </td>
+                        <td>
+                            <div><button class="btn btn-light btn-sm">Удалить</button></div>
+                        </td>
+                    </tr>
+                    {%endfor%}
+                </tbody>
+            </table>
+
+            <h3>Профессорско-преподавательский состав</h3>
+            <button class="btn btn-primary mb-3" onclick="showForm_add_teacher()">Добавить преподавателя</button>
+            <script>
+                flag_add_teacher = true;
+                function showForm_add_teacher() {
+                    if (flag_add_teacher) {
+                        document.getElementById('add_teacher_div').style.display = 'block';
+                    }
+                    else {
+                        document.getElementById('add_teacher_div').style.display = 'none';
+                    }
+                    flag_add_teacher = !flag_add_teacher;
+                }
+            </script>
+            <div id="add_teacher_div" style="display: none;">
+                <form id="add_teacher" action="{{ url_for('projects.insert_teacher') }}" method="post">
+                    <input type="text" class="form-control" name="project_id" style="display: none;" value="{{ project_id }}">
+                    <div class="mb-3">
+                        <label for="teacher_name" class="form-label">ФИО</label>
+                        <input type="text" class="form-control" id="teacher_name" name="teacher_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="teacher_department" class="form-label">Кафедра</label>
+                        <select class="form-select" id="teacher_department" name="teacher_department" required>
+                            {%for department in departments%} 
+                                <option value="{{ department['id'] }}">{{ department["name"] }}</option>
+                            {%endfor%}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Добавить</button>
+                </form>
+            </div>
+            <table class="table mt-4">
+                <thead>
+                    <tr>
+                        <th>ФИО</th>
+                        <th>Кафдера</th>
+                        <th>Изменить</th>
+                        <th>Удалить</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {%for teacher in teachers%} 
+                    <tr>
+                        <td>{{ teacher['name'] }}</td>
+                        <td>{{ teacher['department_name'] }}</td>
+                        <td>
+                            <div><button class="btn btn-light btn-sm">Изменить</button></div>
+                        </td>
+                        <td>
+                            <div><button class="btn btn-light btn-sm">Удалить</button></div>
+                        </td>
+                    </tr>
+                    {%endfor%}
+                </tbody>
+            </table>
+
+            <h3>Аудитории</h3>
+            <button class="btn btn-primary mb-3" onclick="showForm_add_aud()">Добавить аудиторию</button>
+            <script>
+                flag_add_aud = true;
+                function showForm_add_aud() {
+                    if (flag_add_aud) {
+                        document.getElementById('add_aud_div').style.display = 'block';
+                    }
+                    else {
+                        document.getElementById('add_aud_div').style.display = 'none';
+                    }
+                    flag_add_aud = !flag_add_aud;
+                }
+            </script>
+            <div id="add_aud_div" style="display: none;">
+                <form id="add_aud" action="{{ url_for('projects.insert_aud') }}" method="post">
+                    <input type="text" class="form-control" name="project_id" style="display: none;" value="{{ project_id }}">
+                    <div class="mb-3">
+                        <label for="aud_name" class="form-label">Номер аудитории</label>
+                        <input type="text" class="form-control" id="aud_name" name="aud_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="aud_size" class="form-label">Размер (вместимость)</label>
+                        <input type="number" min="15" max="200" class="form-control" id="aud_size" name="aud_size" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="aud_faculty" class="form-label">Факультет</label>
+                        <select class="form-select" id="aud_faculty" name="aud_faculty" required>
+                            {%for faculty in faculties%} 
+                                <option value="{{ faculty['id'] }}">{{ faculty["name"] }}</option>
+                            {%endfor%}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="aud_department" class="form-label">Кафедра</label>
+                        <select class="form-select" id="aud_department" name="aud_department">
+                            <option value="-" selected>-</option>
+                            {%for department in departments%} 
+                                <option value="{{ department['id'] }}">{{ department["name"] }}</option>
+                            {%endfor%}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Добавить</button>
+                </form>
+            </div>
+            <table class="table mt-4">
+                <thead>
+                    <tr>
+                        <th>Номер</th>
+                        <th>Факультет</th>
+                        <th>Кафдера</th>
+                        <th>Изменить</th>
+                        <th>Удалить</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {%for aud in auds%} 
+                    <tr>
+                        <td>{{ aud['name'] }}</td>
+                        <td>{{ aud['faculty_name'] }}</td>
+                        <td>{{ aud['department_name'] }}</td>
+                        <td>
+                            <div><button class="btn btn-light btn-sm">Изменить</button></div>
+                        </td>
+                        <td>
+                            <div><button class="btn btn-light btn-sm">Удалить</button></div>
+                        </td>
+                    </tr>
+                    {%endfor%}
+                </tbody>
+            </table>
+
+            <h3>Предметы</h3>
+            <button class="btn btn-primary mb-3" onclick="showForm_add_subject()">Добавить предмет</button>
+            <script>
+                flag_add_subject = true;
+                function showForm_add_subject() {
+                    if (flag_add_subject) {
+                        document.getElementById('add_subject_div').style.display = 'block';
+                    }
+                    else {
+                        document.getElementById('add_subject_div').style.display = 'none';
+                    }
+                    flag_add_subject = !flag_add_subject;
+                }
+            </script>
+            <div id="add_subject_div" style="display: none;">
+                <form id="add_subject" action="{{ url_for('projects.insert_subject') }}" method="post">
+                    <input type="text" class="form-control" name="project_id" style="display: none;" value="{{ project_id }}">
+                    <div class="mb-3">
+                        <label for="subject_name" class="form-label">Название предмета</label>
+                        <input type="text" class="form-control" id="subject_name" name="subject_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="short_name" class="form-label">Сокращение</label>
+                        <input type="text" class="form-control" id="short_name" name="short_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="subject_group" class="form-label">Группа</label>
+                        <select class="form-select" id="subject_group" name="subject_group" required>
+                            {%for group in groups%} 
+                                <option value="{{ group['id'] }}">{{ group["name"] }}</option>
+                            {%endfor%}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="subject_department" class="form-label">Кафедра предмета</label>
+                        <select class="form-select" id="subject_department" name="subject_department">
+                            <option value="-" selected>-</option>
+                            {%for department in departments%} 
+                                <option value="{{ department['id'] }}">{{ department["name"] }}</option>
+                            {%endfor%}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="subject_hours" class="form-label">Количество часов</label>
+                        <select class="form-select" id="subject_hours" name="subject_hours" required>
+                            <option value="72" selected>72</option>
+                            <option value="108">108</option>
+                            <option value="144">144</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="subject_main_techer" class="form-label">Главный преподаватель</label>
+                        <select class="form-select" id="subject_main_techer" name="subject_main_techer" required>
+                            {%for teacher in teachers%} 
+                                <option value="{{ teacher['id'] }}">{{ teacher['department_name'] }}. {{ teacher["name"] }}</option>
+                            {%endfor%}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="subject_second_techer" class="form-label">Дополнительный преподаватель</label>
+                        <select class="form-select" id="subject_second_techer" name="subject_second_techer">
+                            <option value="-" selected>-</option>
+                            {%for teacher in teachers%} 
+                                <option value="{{ teacher['id'] }}">{{ teacher['department_name'] }}. {{ teacher["name"] }}</option>
+                            {%endfor%}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Добавить</button>
+                </form>
+            </div>
+            <table class="table mt-4">
+                <thead>
+                    <tr>
+                        <th>Группа</th>
+                        <th>Название</th>
+                        <th>Сокращение</th>
+                        <th>Часы</th>
+                        <th>Преподаватель</th>
+                        <th>Второй преподаватель</th>
+                        <th>Кафедра проведения</th>
+                        <th>Изменить</th>
+                        <th>Удалить</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {%for subject in subjects%} 
+                    <tr>
+                        <td>{{ subject['group'] }}</td>
+                        <td>{{ subject['name'] }}</td>
+                        <td>{{ subject['short_name'] }}</td>
+                        <td>{{ subject['hours'] }}</td>
+                        <td>{{ subject['main_teacher'] }}</td>
+                        <td>{{ subject['second_teacher'] }}</td>
+                        <td>{{ subject['department'] }}</td>
+                        <td>
+                            <div><button class="btn btn-light btn-sm">Изменить</button></div>
+                        </td>
+                        <td>
+                            <div><button class="btn btn-light btn-sm">Удалить</button></div>
+                        </td>
+                    </tr>
+                    {%endfor%}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section id="workers" class="first-level-section" style="display: none;">
+        <h1>Работники проекта</h1>
+        <h3>Руководитель проекта:</h3>
+        <p>{{ admin_name }}</p>
+        <h3>Работники проекта:</h3>
+        <table class="table mt-4">
+            <thead>
+                <tr>
+                    <th>ФИО</th>
+                    <th>Удалить</th>
+                </tr>
+            </thead>
+            <tbody>
+                {%for worker in proj_workers%} 
+                <tr>
+                    <td>{{ worker['name'] }}</td>
+                    <td>
+                        <div><button class="btn btn-light btn-sm">Удалить</button></div>
+                    </td>
+                </tr>
+                {%endfor%}
+            </tbody>
+        </table>
+        <button class="btn btn-primary mb-3" onclick="showForm_add_worker()">Добавить работника</button>
+        <script>
+            flag_add_worker = true;
+            function showForm_add_worker() {
+                if (flag_add_worker) {
+                    document.getElementById('add_worker_div').style.display = 'block';
+                }
+                else {
+                    document.getElementById('add_worker_div').style.display = 'none';
+                }
+                flag_add_worker = !flag_add_worker;
+            }
+        </script>
+        <div id="add_worker_div" style="display: none;">
+            <form id="add_worker" action="{{ url_for('projects.add_worker') }}" method="post">
+                <input type="text" class="form-control" name="project_id" style="display: none;" value="{{ project_id }}">
+                <div class="mb-3">
+                    <label for="add_worker_id" class="form-label">Работник</label>
+                    <select class="form-select" id="add_worker_id" name="add_worker_id" required>
+                        {%for worker in workers%} 
+                            <option value="{{ worker['id'] }}">{{ worker["name"] }}</option>
+                        {%endfor%}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Добавить</button>
+            </form>
+        </div>
+    </section>
+
+    <section id="workbench" class="first-level-section" style="display: none;">
+        <div class="container-fluid">
+            <div class="row">
+                <nav id="sidebar-second" class="col-md-1 navbar-dark bg-dark sidebar">
+                    <div class="sidebar-sticky">
+                        <ul class="nav flex-column">
+                            {%for faculty in faculties %} 
+                            <li class="nav-item">
+                                <a class="nav-link {% if faculty['index'] == 0 %}active{% endif %}" href="#faculty{{ faculty['id'] }}">{{ faculty["name"] }}</a>
+                            </li>
+                            {%endfor%}
+                        </ul>
+                    </div>
+                </nav>
+                <main class="ml-sm-auto" id="second-level-main">
+                    {%for faculty in faculties %} 
+                    <section id="faculty{{ faculty['id'] }}" {% if faculty["index"] != 0 %}style="display: none;"{% endif %}>
+                        <div class="container-fluid"> 
+                        <div class="row">
+                            <nav class="sidebar-third col-md-1 sidebar2">
+                                <div class="sidebar-sticky">
+                                    <ul class="nav flex-column">
+                                    {%for department in departments %} 
+                                    {% if department["faculty_name"] == faculty["name"] %}
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="#department{{ department['id'] }}">
+                                                {{ department["name"] }}
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                    {%endfor%}
+                                    </ul>
+                                </div>
+                            </nav>
+                            <main class="third-level-main ml-sm-auto">
+                                {%for department in departments %} 
+                                {% if department["faculty_name"] == faculty["name"] %}
+                                <section id="department{{ department['id'] }}" style="display: none;">
+    <div class="container-fluid">
+        <div class="row">
+            <nav class="sidebar-forth col-md-1 sidebar3">
+                <div class="sidebar-sticky">
+                    <ul class="nav flex-column">
+                    {%for group in groups %} 
+                    {% if group["department_name"] == department["name"] %}
+                        <li class="nav-item group-item">
+                            <a class="nav-link" href="#group{{ group['id'] }}">
+                                {{ group["name"] }}
+                            </a>
+                        </li>
+                    {% endif %}
+                    {%endfor%}
+                    </ul>
+                </div>
+            </nav>
+            <main class="forth-level-main ml-sm-auto">
+                {%for group in groups %} 
+                {% if group["department_name"] == department["name"] %}
+                <section id="group{{ group['id'] }}" style="display: none;">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <nav class="sidebar-fifth navbar navbar-expand-lg navbar-dark bg-dark">
+                                <div class="container">
+                                    <ul class="navbar-nav">
+                                        <li class="nav-item">
+                                            <a class="nav-link active" href="#group{{ group['id'] }}week1">Неделя 1</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="#group{{ group['id'] }}week2">Неделя 2</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </nav>
+                            <main class="fifth-level-main ms-sm-auto px-md-4">
+                                {%for week in [0,1] %} 
+                                <section id="group{{ group['id'] }}week{{week+1}}">
+                                    <table class="table mt-4">
+                                        <thead>
+                                            <tr>
+                                                <th>Пара</th>
+                                                <th style="text-align: center !important;">Понедельник</th>
+                                                <th style="text-align: center !important;">Вторник</th>
+                                                <th style="text-align: center !important;">Среда</th>
+                                                <th style="text-align: center !important;">Четверг</th>
+                                                <th style="text-align: center !important;">Пятница</th>
+                                                <th style="text-align: center !important;">Суббота</th> 
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {%for sched in schedule[group['name']][week]%} 
+                                            <tr>
+                                                {%for s in sched%} 
+                                                    <td>{{ s|safe }}</td>
+                                                {%endfor%}
+                                            </tr>
+                                            {%endfor%}
+                                        </tbody>
+                                    </table>
+                                </section>
+                                {%endfor%}
+                            </main>
+                        </div>
+                    </div>
+                </section>
+                {% endif %}
+                {%endfor%}
+            </main>
+        </div>
+    </div>
+                                </section>
+                                {% endif %}
+                                {%endfor%}
+                            </main>
+                        </div>
+                        </div>
+                    </section>
+                    {%endfor%}
+                </main>
+            </div>
+        </div>
+    </section>
+</main>
+
+<div class="modal fade" id="form_add_cell" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Добавить ячейку расписания</h5>
+            </div>
+            <div class="modal-body">
+                <form action="{{ url_for('projects.add_cell') }}" method="post" id="add_cell_form">
+                    <input type="text" class="form-control" name="project_id" style="display: none;" value="{{ project_id }}">
+                    <input type="text" class="form-control" name="group_id" id="group_id" style="display: none;" value="">
+                    <input type="number" min="1" max="2" class="form-control" name="week" id="week" style="display: none;" value="">
+                    <input type="number" min="1" max="8" class="form-control" name="pair_number" id="pair_number" style="display: none;" value="">
+                    <input type="number" min="1" max="6" class="form-control" name="day_number" id="day_number" style="display: none;" value="">
+                    <div class="mb-3">
+                        <label for="cell_subject_name" class="form-label">Предмет</label>
+                        <select class="form-select" id="cell_subject_name" name="cell_subject_name" required>
+                            {%for subject in subjects%} 
+                                <option value="{{ subject['id'] }}" data-group="{{ subject['group_id'] }}">
+                                    {{ subject["name"] }} {{ subject['group'] }}
+                                </option>
+                            {%endfor%}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="cell_classroom_name" class="form-label">Аудитория</label>
+                        <select class="form-select" id="cell_classroom_name" name="cell_classroom_name" required>
+                            {%for aud in auds%} 
+                                <option value="{{ aud['id'] }}">{{ aud["faculty_name"] }}. {{ aud["name"] }}</option>
+                            {%endfor%}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Добавить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+</div>
+
+
+<script src="./jquery-3.5.1.slim.min.js"></script>
+<script src="./popper.min.js"></script>
+<script src="./bootstrap_4_5_2.bundle.min.js"></script>
+<script>
+    var subjects = {{ subjects|tojson }};
+    function show_modal(group_id, week, pair_number, day_number) {
+        document.getElementById('group_id').value = group_id;
+        document.getElementById('week').value = week;
+        document.getElementById('pair_number').value = pair_number;
+        document.getElementById('day_number').value = day_number;
+        var innter_html = '';
+        var group_name = document.querySelectorAll('.group-item .active')[0].textContent;
+        for (let i=0; i<subjects.length; i++) {
+            if (subjects[i]["group"] == group_name.trim()) {
+                innter_html += '<option value="'+subjects[i]["id"]+'" data-group="'+subjects[i]["group_id"]+'">'+subjects[i]["name"]+subjects[i]["group"]+'</option>';
+            }
+        }
+        document.getElementById('cell_subject_name').innerHTML = innter_html;
+        $('#form_add_cell').modal('show');
+    }
+</script>
+
+<script>
+    document.querySelectorAll('#sidebar .nav-link').forEach(item => {
+        item.addEventListener('click', (event) => {
+            event.preventDefault();
+            document.querySelectorAll('#sidebar .nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            item.classList.add('active');
+    
+            let targetId = item.getAttribute('href');
+            document.querySelectorAll('#first-level-main .first-level-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            document.querySelector(targetId).style.display = 'block';
+        });
+    });
+    document.querySelectorAll('#sidebar-second .nav-link').forEach(item => {
+        item.addEventListener('click', (event) => {
+            event.preventDefault();
+            document.querySelectorAll('#sidebar-second .nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            item.classList.add('active');
+    
+            let targetId = item.getAttribute('href');
+            document.querySelectorAll('#second-level-main section').forEach(section => {
+                section.style.display = 'none';
+            });
+            document.querySelector(targetId).style.display = 'block';
+        });
+    });
+    document.querySelectorAll('.sidebar-third .nav-link').forEach(item => {
+        item.addEventListener('click', (event) => {
+            event.preventDefault();
+            document.querySelectorAll('.sidebar-third .nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            item.classList.add('active');
+    
+            let targetId = item.getAttribute('href');
+            document.querySelectorAll('.third-level-main section').forEach(section => {
+                section.style.display = 'none';
+            });
+            document.querySelector(targetId).style.display = 'block';
+        });
+    });
+    document.querySelectorAll('.sidebar-forth .nav-link').forEach(item => {
+        item.addEventListener('click', (event) => {
+            event.preventDefault();
+            document.querySelectorAll('.sidebar-forth .nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            item.classList.add('active');
+    
+            let targetId = item.getAttribute('href');
+            document.querySelectorAll('.forth-level-main section').forEach(section => {
+                section.style.display = 'none';
+            });
+            document.querySelector(targetId).style.display = 'block';
+        });
+    });
+    document.querySelectorAll('.sidebar-fifth .nav-link').forEach(item => {
+        item.addEventListener('click', (event) => {
+            event.preventDefault();
+            document.querySelectorAll('.sidebar-fifth .nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            item.classList.add('active');
+    
+            let targetId = item.getAttribute('href');
+            document.querySelectorAll('.fifth-level-main section').forEach(section => {
+                section.style.display = 'none';
+            });
+            document.querySelector(targetId).style.display = 'block';
+        });
+    });
+</script>
+
+</body>
+</html>
