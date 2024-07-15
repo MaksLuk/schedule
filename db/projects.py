@@ -220,10 +220,11 @@ def get_project_groups(project_id):
     with connect(host=host, user=user, password=password, database=db) as connection:
         with connection.cursor(dictionary=True) as cursor:
             cursor.execute('''
-                SELECT g.id, g.name, s.name as spec_name, d.name as department_name
+                SELECT g.id, g.name, s.name as spec_name, d.name as department_name, f.id as faculty_id
                 FROM `groups` g 
                 inner join specialities s on g.speciality = s.id 
                 inner join departments d on s.department = d.id
+                inner join faculties f on d.faculty = f.id
                 order by d.id;
             ''')
             data = cursor.fetchall()
@@ -276,7 +277,8 @@ def get_project_subjects(project_id):
     return data
 
 
-def get_schedule(project_id):
+def get_schedule(project_id, groups):
+    days = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота']
     pairs = [
         '1 пара [08:00 - 09:35]',
         '2 пара [09:50 - 11:25]',
@@ -301,49 +303,17 @@ def get_schedule(project_id):
                 left join teachers t2 on sb.second_teacher = t2.id;
             ''')
             data = cursor.fetchall()
-    raw_result = dict()
+    result = {group['name']: [[[{'id': None, 'pair_number': pair_num} for pair_num in range(1, 9)] for _ in range(6)] for _ in range(2)] for group in groups}
     for i in data:
-        if not i['group'] in raw_result:
-            raw_result[i['group']] = [dict(), dict()]
-        if not i['day_number'] in raw_result[i['group']][i['week']]:
-            raw_result[i['group']][i['week']][i['day_number']] = dict()
-        i['pair_number'] = pairs[i['pair_number']-1]
-        raw_result[i['group']][i['week']][i['day_number']][i['pair_number']] = i
-
-    groups = get_project_groups(project_id)
-    result = dict()
-    for group in groups:
-        result[group['name']] = [[[pairs[pair]] + [f'''<div class="row justify-content-center">
-                <button class="btn btn-light btn-sm" onclick="show_modal({group['id']}, {week+1}, {pair+1}, {day+1})">+</button>
-                </div>''' for day in range(6)] for pair in range(8)] for week in range(2)]
-
-    for group in raw_result:
-        for week in range(len(raw_result[group])):
-            for day in raw_result[group][week]:
-                for pair in raw_result[group][week][day]:
-                    result[group][week][pairs.index(pair)][day] = to_html(raw_result[group][week][day][pair], project_id)
+        i['main_teacher'] = i['main_teacher'].split(' ')
+        i['main_teacher'] = i['main_teacher'][0] + ' ' + '. '.join(l[0] for l in i['main_teacher'][1:])
+        if i['second_teacher']:
+            i['second_teacher'] = i['second_teacher'].split(' ')
+            i['second_teacher'] = i['second_teacher'][0] + ' ' + '. '.join(j[0] for j in i['second_teacher'][1:] if j)
+        teacher_string = i['main_teacher'] if not i['second_teacher'] else f'{i["main_teacher"]},</p><p class="text-center">{i["second_teacher"]}'
+        i['teacher_string'] = teacher_string
+        result[i['group']][i['week']][i['day_number']][i['pair_number']] = i
     return result
-
-
-def to_html(data, project_id):
-    data['main_teacher'] = data['main_teacher'].split(' ')
-    data['main_teacher'] = data['main_teacher'][0] + ' ' + '. '.join(i[0] for i in data['main_teacher'][1:])
-    if data['second_teacher']:
-        data['second_teacher'] = data['second_teacher'].split(' ')
-        data['second_teacher'] = data['second_teacher'][0] + ' ' + '. '.join(i[0] for i in data['second_teacher'][1:] if i)
-    teacher_string = data['main_teacher'] if not data['second_teacher'] else f'{data["main_teacher"]},</p><p class="text-center">{data["second_teacher"]}'
-    return f''' 
-    <div class="row justify-content-center">
-        <p class="text-center">{data['subject']}</p>
-        <p class="text-center">{teacher_string}</p>
-        <p class="text-center">{data['classroom']}</p>
-        <form action="{ url_for('projects.del_cell') }" method="post">
-            <input type="text" class="form-control" name="project_id" style="display: none;" value="{project_id}">
-            <input type="text" class="form-control" name="cell_id" style="display: none;" value="{data['id']}">
-            <div class="row justify-content-center"><button type="submit" class="btn btn-light btn-sm">Удалить</button></div>
-        </form>
-    </div>
-    '''
 
 
 def insert_cell_db(group_id, week, day_number, pair_number, subject, classroom, project_id):

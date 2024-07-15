@@ -30,7 +30,7 @@ def render_template_project(project_id, user_id):
     admin_name = get_admin_name(project_id)
     workers = [i for i in show_users() if i['id'] != user_id]
 
-    schedule = get_schedule(project_id)
+    schedule = get_schedule(project_id, groups)
     return render_template(
         'project.html', project_id=project_id, faculties=faculties, departments=departments, 
         specs=specs, groups=groups, teachers=teachers, auds=classrooms, subjects=subjects, schedule=schedule,

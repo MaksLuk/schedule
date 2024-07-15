@@ -12,34 +12,10 @@
         }
         .sidebar {
           position: fixed;
-          width: 120px;
           top: 50px;
           bottom: 0;
           left: 0;
-          z-index: 100;
           padding: 58px 0 0;
-          box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
-        }
-        .sidebar2 {
-          position: fixed;
-          width: 120px;
-          top: 75px;
-          bottom: 0;
-          left: 120px;
-          z-index: 100;
-          padding: 58px 0 0;
-          background-color: #2c2c2c;
-          box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
-        }
-        .sidebar3 {
-          position: fixed;
-          width: 120px;
-          top: 75px;
-          bottom: 0;
-          left: 240px;
-          z-index: 100;
-          padding: 58px 0 0;
-          background-color: #363636;
           box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
         }
       </style>
@@ -64,7 +40,7 @@
 
 <div class="container-fluid">
 <div class="row">
-<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4" id="first-level-main"> 
+<main class="col-md-11 ms-sm-auto col-lg-11 px-md-4" id="first-level-main"> 
     <section id="main" class="first-level-section">
         <div class="container mt-4">
             <h1>Главная</h1>
@@ -594,108 +570,111 @@
                     </div>
                 </nav>
                 <main class="ml-sm-auto" id="second-level-main">
-                    {%for faculty in faculties %} 
-                    <section id="faculty{{ faculty['id'] }}" {% if faculty["index"] != 0 %}style="display: none;"{% endif %}>
-                        <div class="container-fluid"> 
-                        <div class="row">
-                            <nav class="sidebar-third col-md-1 sidebar2">
-                                <div class="sidebar-sticky">
-                                    <ul class="nav flex-column">
-                                    {%for department in departments %} 
-                                    {% if department["faculty_name"] == faculty["name"] %}
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="#department{{ department['id'] }}">
-                                                {{ department["name"] }}
-                                            </a>
-                                        </li>
-                                    {% endif %}
+                    <div class="container-fluid"> 
+                    <div class="row mb-2 mt-2">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row">
+                                <div class="col-2">
+                                    <label for="subjectSelect">Выберите предмет:</label>
+                                </div>
+                                <div class="col-4">
+                                    <select class="form-control" id="subjectSelect">
+                                    {%for subject in subjects%} 
+                                        <option value="{{ subject['short_name'] }}">{{ subject["short_name"] }}</option>
                                     {%endfor%}
-                                    </ul>
+                                    </select>
                                 </div>
-                            </nav>
-                            <main class="third-level-main ml-sm-auto">
-                                {%for department in departments %} 
-                                {% if department["faculty_name"] == faculty["name"] %}
-                                <section id="department{{ department['id'] }}" style="display: none;">
-    <div class="container-fluid">
-        <div class="row">
-            <nav class="sidebar-forth col-md-1 sidebar3">
-                <div class="sidebar-sticky">
-                    <ul class="nav flex-column">
-                    {%for group in groups %} 
-                    {% if group["department_name"] == department["name"] %}
-                        <li class="nav-item group-item">
-                            <a class="nav-link" href="#group{{ group['id'] }}">
-                                {{ group["name"] }}
-                            </a>
-                        </li>
-                    {% endif %}
-                    {%endfor%}
-                    </ul>
-                </div>
-            </nav>
-            <main class="forth-level-main ml-sm-auto">
-                {%for group in groups %} 
-                {% if group["department_name"] == department["name"] %}
-                <section id="group{{ group['id'] }}" style="display: none;">
-                    <div class="container-fluid">
-                        <div class="row">
-                            <nav class="sidebar-fifth navbar navbar-expand-lg navbar-dark bg-dark">
-                                <div class="container">
-                                    <ul class="navbar-nav">
-                                        <li class="nav-item">
-                                            <a class="nav-link active" href="#group{{ group['id'] }}week1">Неделя 1</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="#group{{ group['id'] }}week2">Неделя 2</a>
-                                        </li>
-                                    </ul>
+                                <div class="col-3 text-right mb-2">
+                                    <button type="button" class="btn btn-primary mr-2" id='select_subj_button'>Выбрать</button>
+                                    <button type="button" class="btn btn-secondary" id='clear_subj_button'>Сброс</button>
                                 </div>
-                            </nav>
-                            <main class="fifth-level-main ms-sm-auto px-md-4">
-                                {%for week in [0,1] %} 
-                                <section id="group{{ group['id'] }}week{{week+1}}">
-                                    <table class="table mt-4">
-                                        <thead>
-                                            <tr>
-                                                <th>Пара</th>
-                                                <th style="text-align: center !important;">Понедельник</th>
-                                                <th style="text-align: center !important;">Вторник</th>
-                                                <th style="text-align: center !important;">Среда</th>
-                                                <th style="text-align: center !important;">Четверг</th>
-                                                <th style="text-align: center !important;">Пятница</th>
-                                                <th style="text-align: center !important;">Суббота</th> 
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {%for sched in schedule[group['name']][week]%} 
-                                            <tr>
-                                                {%for s in sched%} 
-                                                    <td>{{ s|safe }}</td>
-                                                {%endfor%}
-                                            </tr>
-                                            {%endfor%}
-                                        </tbody>
-                                    </table>
-                                </section>
-                                {%endfor%}
-                            </main>
+                                <div class="col-3">
+                                    <div class="form-check form-check-inline float-right">
+                                        <input class="form-check-input" type="radio" name="weekRadio" id="week1Radio" value="week1" checked>
+                                        <label class="form-check-label" for="week1Radio">Неделя 1</label>
+                                    </div>
+                                    <div class="form-check form-check-inline float-right mr-3">
+                                        <input class="form-check-input" type="radio" name="weekRadio" id="week2Radio" value="week2">
+                                        <label class="form-check-label" for="week2Radio">Неделя 2</label>
+                                    </div>
+                                </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </section>
-                {% endif %}
-                {%endfor%}
-            </main>
-        </div>
-    </div>
-                                </section>
-                                {% endif %}
-                                {%endfor%}
-                            </main>
-                        </div>
-                        </div>
+                    <div class="row">
+                    {%for faculty in faculties %} 
+                    <section id="faculty{{ faculty['id'] }}" {% if faculty["index"] != 0 %}style="display: none;"{% endif %}>                            
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th></th>
+                                        {%for group in groups%} 
+                                        {%if group['faculty_id'] == faculty['id']%}
+                                            <th class="text-center">{{ group['name'] }}</th>
+                                        {%endif%}
+                                        {%endfor%}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {%for index, day in [(1,'Понедельник'), (2,'Вторник'), (3,'Среда'), (4,'Четверг'), (5,'Пятница'), (6,'Суббота')]%} 
+                                    <tr>
+                                        <td class="align-middle fit-content" style="writing-mode: vertical-lr; text-orientation: upright;">
+                                            <b>{{ day }}</b>
+                                        </td>
+                                        <td class="fit-content p-0">
+                                            <table class="table p-0 mb-0 table-bordered">
+                                                <tbody>
+                                                    <tr class="fit-content p-0" style="height:48px;"><td class="fit-content">1 пара [08:00 - 09:35]</td></tr>
+                                                    <tr class="fit-content p-0" style="height:48px;"><td class="fit-content">2 пара [09:50 - 11:25]</td></tr>
+                                                    <tr class="fit-content p-0" style="height:48px;"><td class="fit-content">3 пара [11:40 - 13:15]</td></tr>
+                                                    <tr class="fit-content p-0" style="height:48px;"><td class="fit-content">4 пара [13:45 - 15:20]</td></tr>
+                                                    <tr class="fit-content p-0" style="height:48px;"><td class="fit-content">5 пара [15:35 - 17:10]</td></tr>
+                                                    <tr class="fit-content p-0" style="height:48px;"><td class="fit-content">6 пара [17:25 - 19:00]</td></tr>
+                                                    <tr class="fit-content p-0" style="height:48px;"><td class="fit-content">7 пара [19:15 - 20:50]</td></tr>
+                                                    <tr class="fit-content p-0" style="height:48px;"><td class="fit-content">8 пара [21:05 - 22:35]</td></td>
+                                                </tbody>
+                                            </table>
+                                        </td>
+                                        {%for week in [0, 1]%}
+                                        {%for group in groups%} 
+                                        {%if group['faculty_id'] == faculty['id']%}
+                                        <td class="fit-content p-0 week-{{ week }}" {%if week==1 %}style="display: none;"{%endif%}>
+                                            <table class="table p-0 mb-0 table-bordered">
+                                                <tbody>
+                                                    {%for cell in schedule[group['name']][week][index-1]%}
+                                                    <tr class="fit-content p-0">
+                                                        <td class="fit-content schedule_cell" style="align-content: center;">
+                                                            {%if cell['id'] == None%}
+    <button class="btn btn-light btn-sm" onclick="show_modal({{ group['id'] }}, {{ week + 1 }}, {{ cell['pair_number']+1 }}, {{ index }})">+</button>
+                                                            {%else%}
+                                                                <p class="text-center p-0">{{cell['subject']}} {{cell['classroom']}}</p>
+                                                                <form action="{{ url_for('projects.del_cell') }}" method="post">
+                                                                    <input type="text" class="form-control" name="project_id" style="display: none;" value="{{project_id}}">
+                                                                    <input type="text" class="form-control" name="cell_id" style="display: none;" value="{cell['id']}">
+                                                                    <button type="submit" class="btn btn-light btn-sm">Удалить</button>
+                                                                </form>
+                                                            {%endif%}
+                                                        </td>
+                                                    </tr>
+                                                    {%endfor%}
+                                                </tbody>
+                                            </table>
+                                        </td>
+                                        {%endif%}
+                                        {%endfor%}
+                                        {%endfor%}
+                                    </tr>
+                                    {%endfor%}
+                                </tbody>
+                            </table>
+                            
                     </section>
                     {%endfor%}
+                    </div>
+                    </div>
                 </main>
             </div>
         </div>
@@ -748,16 +727,50 @@
 <script src="./popper.min.js"></script>
 <script src="./bootstrap_4_5_2.bundle.min.js"></script>
 <script>
+    $(document).ready(function() {
+      $("#select_subj_button").click(function() {
+        var subj = document.getElementById('subjectSelect').value;
+        console.log(subj);
+        $('td.schedule_cell').filter(function(){
+            return $(this).text().includes(subj);
+        }).css('background-color', 'yellow');
+      });
+      $("#clear_subj_button").click(function() {
+        $('td.schedule_cell').css('background-color', 'white');
+      });
+      $("#week1Radio").change(function() {
+        if (this.checked) {
+          $(".week-1").hide();
+          $(".week-0").show();
+        } else {
+          $(".week-1").show();
+          $(".week-0").hide();
+        }
+      });
+      $("#week2Radio").change(function() {
+        if (this.checked) {
+          $(".week-1").show();
+          $(".week-0").hide();
+        } else {
+          $(".week-0").show();
+          $(".week-1").hide();
+        }
+      });
+    });
+</script>
+<script>
     var subjects = {{ subjects|tojson }};
+    var groups = {{ groups|tojson }};
     function show_modal(group_id, week, pair_number, day_number) {
         document.getElementById('group_id').value = group_id;
         document.getElementById('week').value = week;
         document.getElementById('pair_number').value = pair_number;
         document.getElementById('day_number').value = day_number;
         var innter_html = '';
-        var group_name = document.querySelectorAll('.group-item .active')[0].textContent;
+        var current_group = groups.find(g => g['id'] === group_id);
+        var group_name = current_group['name'];
         for (let i=0; i<subjects.length; i++) {
-            if (subjects[i]["group"] == group_name.trim()) {
+            if (subjects[i]["group"] == group_name) {
                 innter_html += '<option value="'+subjects[i]["id"]+'" data-group="'+subjects[i]["group_id"]+'">'+subjects[i]["name"]+subjects[i]["group"]+'</option>';
             }
         }
