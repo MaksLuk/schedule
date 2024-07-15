@@ -18,6 +18,9 @@
           padding: 58px 0 0;
           box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
         }
+        .end_day_cell {
+            border-bottom: solid 2px black;
+        }
       </style>
 </head>
 <body>
@@ -605,72 +608,71 @@
                     </div>
                     <div class="row">
                     {%for faculty in faculties %} 
-                    <section id="faculty{{ faculty['id'] }}" {% if faculty["index"] != 0 %}style="display: none;"{% endif %}>                            
-                            <table class="table table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th></th>
-                                        <th></th>
-                                        {%for group in groups%} 
-                                        {%if group['faculty_id'] == faculty['id']%}
-                                            <th class="text-center">{{ group['name'] }}</th>
-                                        {%endif%}
-                                        {%endfor%}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {%for index, day in [(1,'Понедельник'), (2,'Вторник'), (3,'Среда'), (4,'Четверг'), (5,'Пятница'), (6,'Суббота')]%} 
-                                    <tr>
-                                        <td class="align-middle fit-content" style="writing-mode: vertical-lr; text-orientation: upright;">
-                                            <b>{{ day }}</b>
-                                        </td>
-                                        <td class="fit-content p-0">
-                                            <table class="table p-0 mb-0 table-bordered">
-                                                <tbody>
-                                                    <tr class="fit-content p-0" style="height:48px;"><td class="fit-content">1 пара [08:00 - 09:35]</td></tr>
-                                                    <tr class="fit-content p-0" style="height:48px;"><td class="fit-content">2 пара [09:50 - 11:25]</td></tr>
-                                                    <tr class="fit-content p-0" style="height:48px;"><td class="fit-content">3 пара [11:40 - 13:15]</td></tr>
-                                                    <tr class="fit-content p-0" style="height:48px;"><td class="fit-content">4 пара [13:45 - 15:20]</td></tr>
-                                                    <tr class="fit-content p-0" style="height:48px;"><td class="fit-content">5 пара [15:35 - 17:10]</td></tr>
-                                                    <tr class="fit-content p-0" style="height:48px;"><td class="fit-content">6 пара [17:25 - 19:00]</td></tr>
-                                                    <tr class="fit-content p-0" style="height:48px;"><td class="fit-content">7 пара [19:15 - 20:50]</td></tr>
-                                                    <tr class="fit-content p-0" style="height:48px;"><td class="fit-content">8 пара [21:05 - 22:35]</td></td>
-                                                </tbody>
-                                            </table>
-                                        </td>
-                                        {%for week in [0, 1]%}
-                                        {%for group in groups%} 
-                                        {%if group['faculty_id'] == faculty['id']%}
-                                        <td class="fit-content p-0 week-{{ week }}" {%if week==1 %}style="display: none;"{%endif%}>
-                                            <table class="table p-0 mb-0 table-bordered">
-                                                <tbody>
-                                                    {%for cell in schedule[group['name']][week][index-1]%}
-                                                    <tr class="fit-content p-0">
-                                                        <td class="fit-content schedule_cell" style="align-content: center;">
-                                                            {%if cell['id'] == None%}
-    <button class="btn btn-light btn-sm" onclick="show_modal({{ group['id'] }}, {{ week + 1 }}, {{ cell['pair_number']+1 }}, {{ index }})">+</button>
-                                                            {%else%}
-                                                                <p class="text-center p-0">{{cell['subject']}} {{cell['classroom']}}</p>
-                                                                <form action="{{ url_for('projects.del_cell') }}" method="post">
-                                                                    <input type="text" class="form-control" name="project_id" style="display: none;" value="{{project_id}}">
-                                                                    <input type="text" class="form-control" name="cell_id" style="display: none;" value="{cell['id']}">
-                                                                    <button type="submit" class="btn btn-light btn-sm">Удалить</button>
-                                                                </form>
-                                                            {%endif%}
-                                                        </td>
-                                                    </tr>
-                                                    {%endfor%}
-                                                </tbody>
-                                            </table>
-                                        </td>
-                                        {%endif%}
-                                        {%endfor%}
-                                        {%endfor%}
-                                    </tr>
+                    <section id="faculty{{ faculty['id'] }}" {% if faculty["index"] != 0 %}style="display: none;"{% endif %}>  
+                        <div class="table-responsive">                          
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr class="end_day_cell">
+                                    <th></th>
+                                    <th></th>
+                                    {%for group in groups%} 
+                                    {%if group['faculty_id'] == faculty['id']%}
+                                        <th class="text-center">{{ group['name'] }}</th>
+                                    {%endif%}
                                     {%endfor%}
-                                </tbody>
-                            </table>
-                            
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {%for index, day in [(1,'Понедельник'), (2,'Вторник'), (3,'Среда'), (4,'Четверг'), (5,'Пятница'), (6,'Суббота')]%}
+                                {%for pair_index, pair in enumerate(['1 пара [08:00 - 09:35]', '2 пара [09:50 - 11:25]', '3 пара [11:40 - 13:15]', '4 пара [13:45 - 15:20]', '5 пара [15:35 - 17:10]', '6 пара [17:25 - 19:00]', '7 пара [19:15 - 20:50]', '8 пара [21:05 - 22:35]'])%} 
+                                <tr {%if pair_index == 7 %}class="end_day_cell"{%endif%}>
+                                    {%if pair_index == 0 %}
+                                    <td class="align-middle fit-content end_day_cell" style="writing-mode: vertical-lr; text-orientation: upright; width:40px;" rowspan="8">
+                                        <b>{{ day }}</b>
+                                    </td>
+                                    {%endif%}
+                                    <td class="fit-content" style="width: 200px;">{{ pair }}</td>
+                                    {%for week in [0, 1]%}
+                                    {%for group in groups%} 
+                                    {%if group['faculty_id'] == faculty['id']%}
+                                    <td class="fit-content week-{{ week }} schedule_cell" style="{%if week==1 %}display: none;{%endif%} align-content: center;">
+                                        {%if schedule[group['name']][week][index-1][pair_index]['id'] == None%}
+    <button class="btn btn-light btn-sm" onclick="show_modal({{ group['id'] }}, {{ week + 1 }}, {{ pair_index+1 }}, {{ index }})" style="width:100%">+</button>
+                                        {%else%}
+                                        <p class="text-center mb-0">
+                                            {{schedule[group['name']][week][index-1][pair_index]['subject']}} 
+                                            {{schedule[group['name']][week][index-1][pair_index]['classroom']}}
+                                        </p>
+                                        <p class="text-center mb-0">
+                                            {{schedule[group['name']][week][index-1][pair_index]['teacher_string']|safe}}
+                                        </p>
+                                        <div class="row justify-content-center">
+                                            <div class="col-6">
+                                                <form action="{{ url_for('projects.del_cell') }}" method="post">
+                                                        <input type="text" class="form-control" name="project_id" style="display: none;" value="{{project_id}}">
+                                                        <input type="text" class="form-control" name="cell_id" style="display: none;" value="{{schedule[group['name']][week][index-1][pair_index]['id']}}">
+                                                        <button type="submit" class="btn btn-light btn-sm" style="width:100%">Удалить</button>
+                                                </form>
+                                            </div>
+                                            <div class="col-6">
+                                                <form action="{{ url_for('projects.del_cell') }}" method="post">
+                                                        <input type="text" class="form-control" name="project_id" style="display: none;" value="{{project_id}}">
+                                                        <input type="text" class="form-control" name="cell_id" style="display: none;" value="{{schedule[group['name']][week][index-1][pair_index]['id']}}">
+                                                        <button type="submit" class="btn btn-light btn-sm" style="width:100%">Изменить</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                        {%endif%}
+                                    </td>
+                                    {%endif%}
+                                    {%endfor%}
+                                    {%endfor%}
+                                </tr>
+                                {%endfor%}
+                                {%endfor%}
+                            </tbody>
+                        </table>
+                        </div>  
                     </section>
                     {%endfor%}
                     </div>

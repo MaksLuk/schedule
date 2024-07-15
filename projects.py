@@ -34,8 +34,91 @@ def render_template_project(project_id, user_id):
     return render_template(
         'project.html', project_id=project_id, faculties=faculties, departments=departments, 
         specs=specs, groups=groups, teachers=teachers, auds=classrooms, subjects=subjects, schedule=schedule,
-        admin_name=admin_name, workers=workers
+        admin_name=admin_name, workers=workers, enumerate=enumerate
     )
+
+
+def create_simple_schedule(project_id):
+    # получение исходных данных
+    groups = get_project_groups(project_id)
+    classrooms = get_project_classrooms(project_id)
+    subjects = get_project_subjects(project_id)
+    schedule = get_schedule(project_id, groups)
+
+    # доп. данные
+    groups_id = {i['name']: i['id'] for i in groups}
+    group_counts = {i['name']: i['students_count'] for i in groups}
+
+    # поиск недостающих предметов
+    hours = {72: 2, 108: 3, 144: 4}
+    subject_in_2_week = dict()
+    subjects_count_in_weeks = {i['name']: [0, 0] for i in subjects}
+    for subject in subjects:
+        current_subject_count = 0
+        for week_number, week in enumerate(schedule[subject['group']]):
+            for day in week:
+                for pair in day:
+                    if pair['id'] != None and pair['subject'] == subject['short_name']:
+                        current_subject_count += 1
+                        subjects_count_in_weeks[subject['name']][week_number] += 1
+        if hours[subject['name']] - current_subject_count < 0:
+            return subject['name'] + ' ' + subject['group']
+        if hours[subject['name']] - current_subject_count > 0:
+            subject_in_2_week[subject['name']] = hours[subject['name']] - current_subject_count
+
+    # вставка расписания
+    for subject in subject_in_2_week:
+        for _ in range(subject_in_2_week[subject]):
+            avg_pair_number = get_avg_group_pair_number(schedule, subject['group']) 
+            min_week, min_day = get_day_with_min_pairs(schedule, subject['group'])
+            current_pair = 99
+            for pair_number, pair in enumerate(schedule[subject['group']][min_week][min_day]):
+                if pair['id'] == None:
+                    if abs(avg_pair_number - pair_number) < abs(avg_pair_number - current_pair):
+                        current_pair = pair_number
+            classroom = find_classroom(schedule, classrooms, min_week, min_day, current_pair, group_counts[subject['group']])
+            insert_cell_db(groups_id[subject['group']], min_week, min_day, current_pair, subject['id'], classroom, project_id)
+            schedule = get_schedule(project_id, groups)
+
+
+def find_classroom(schedule, classrooms, week, day, pair, min_count):
+    free_classrooms = []
+    for classroom in classrooms:
+        if classroom['size'] < min_count:
+            continue
+        for i in schedule:
+            if schedule[i][week][day][pair]['classroom'] == classroom['name']:
+                continue
+        return classroom['id']
+
+
+def get_avg_group_pair_number(schedule, group):
+    all_pair_numbers = []
+    for week in schedule[group]:
+        for day in week:
+            for pair in day:
+                if pair['id'] != None and pair['group'] == group:
+                    all_pair_numbers.append(pair['pair_number'])
+    if not all_pair_numbers:
+        return 3
+    return int( sum(all_pair_numbers) / len(all_pair_numbers) )
+
+
+def get_day_with_min_pairs(schedule, group):
+    min_week = 0
+    min_day = 0
+    min_pairs = 99
+    for week_number, week in enumerate(schedule[subject['group']]):
+        for day_number, day in enumerate(week):
+            pairs_in_day = 0
+            for pair in day:
+                if pair['id'] != None and pair['group'] == group:
+                    pairs_in_day += 1
+            if pairs_in_day < min_pairs:
+                min_week = week_number
+                min_day = day_number
+                min_pairs = pairs_in_day
+    return min_week, min_day
 
 
 @projects.route('/project', methods=['GET', 'POST'])

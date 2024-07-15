@@ -220,7 +220,7 @@ def get_project_groups(project_id):
     with connect(host=host, user=user, password=password, database=db) as connection:
         with connection.cursor(dictionary=True) as cursor:
             cursor.execute('''
-                SELECT g.id, g.name, s.name as spec_name, d.name as department_name, f.id as faculty_id
+                SELECT g.id, g.name, s.name as spec_name, d.name as department_name, f.id as faculty_id, g.students_count
                 FROM `groups` g 
                 inner join specialities s on g.speciality = s.id 
                 inner join departments d on s.department = d.id
@@ -245,7 +245,7 @@ def get_project_classrooms(project_id):
     with connect(host=host, user=user, password=password, database=db) as connection:
         with connection.cursor(dictionary=True) as cursor:
             cursor.execute('''
-                SELECT c.id, c.number as `name`, f.name as faculty_name, d.name as department_name 
+                SELECT c.id, c.number as `name`, f.name as faculty_name, d.name as department_name, c.size
                 FROM classrooms c 
                 inner join faculties f on c.faculty = f.id
                 left join departments d on c.department = d.id;
@@ -312,7 +312,7 @@ def get_schedule(project_id, groups):
             i['second_teacher'] = i['second_teacher'][0] + ' ' + '. '.join(j[0] for j in i['second_teacher'][1:] if j)
         teacher_string = i['main_teacher'] if not i['second_teacher'] else f'{i["main_teacher"]},</p><p class="text-center">{i["second_teacher"]}'
         i['teacher_string'] = teacher_string
-        result[i['group']][i['week']][i['day_number']][i['pair_number']] = i
+        result[i['group']][i['week']][i['day_number']-1][i['pair_number']-1] = i
     return result
 
 
