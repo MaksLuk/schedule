@@ -78,3 +78,12 @@ CREATE TABLE schedule (
     FOREIGN KEY (`classroom`) REFERENCES classrooms(`id`),
     FOREIGN KEY (`subject`) REFERENCES subjects(`id`)
 );
+
+
+INSERT INTO faculties(name) VALUES ('ЛФ', 'ФВТ', 'ФМЕН', 'ИФКиС');
+INSERT INTO departments(name, faculty) VALUES ('Лбаз', 1), ('ФизКуль', 4);
+INSERT INTO specialities(name, department) VALUES ('ЛЛ', 1), ('ЛП', 1);
+INSERT INTO groups(name, students_count, speciality) VALUES ('23ЛЛ1', 20, 1), ('23ЛЛ2', 20, 1), ('23ЛЛ3', 20, 1), 
+('23ЛП1', 25, 2), ('23ЛП2', 25, 2), ('23ЛП3', 25, 2);
+INSERT INTO classrooms(number, size, faculty, department) VALUES ('ул.', 100, 4, 2), ('10-105', 35, 1, NULL), 
+('10-106', 30, 1, NULL), ('10-107', 20, 1, NULL), ('10-108', 30, 1, NULL);

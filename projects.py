@@ -12,6 +12,8 @@ from db.projects import (
 )
 from db.users import get_user_type
 from db.admin import show_users
+from utils.create_schedule import create_simple_schedule
+from utils.find_collisions import find_collisions
 
 
 projects = Blueprint('projects', __name__, template_folder='templates', static_folder='static')
@@ -38,89 +40,6 @@ def render_template_project(project_id, user_id):
     )
 
 
-def create_simple_schedule(project_id):
-    # получение исходных данных
-    groups = get_project_groups(project_id)
-    classrooms = get_project_classrooms(project_id)
-    subjects = get_project_subjects(project_id)
-    schedule = get_schedule(project_id, groups)
-
-    # доп. данные
-    groups_id = {i['name']: i['id'] for i in groups}
-    group_counts = {i['name']: i['students_count'] for i in groups}
-
-    # поиск недостающих предметов
-    hours = {72: 2, 108: 3, 144: 4}
-    subject_in_2_week = dict()
-    subjects_count_in_weeks = {i['name']: [0, 0] for i in subjects}
-    for subject in subjects:
-        current_subject_count = 0
-        for week_number, week in enumerate(schedule[subject['group']]):
-            for day in week:
-                for pair in day:
-                    if pair['id'] != None and pair['subject'] == subject['short_name']:
-                        current_subject_count += 1
-                        subjects_count_in_weeks[subject['name']][week_number] += 1
-        if hours[subject['name']] - current_subject_count < 0:
-            return subject['name'] + ' ' + subject['group']
-        if hours[subject['name']] - current_subject_count > 0:
-            subject_in_2_week[subject['name']] = hours[subject['name']] - current_subject_count
-
-    # вставка расписания
-    for subject in subject_in_2_week:
-        for _ in range(subject_in_2_week[subject]):
-            avg_pair_number = get_avg_group_pair_number(schedule, subject['group']) 
-            min_week, min_day = get_day_with_min_pairs(schedule, subject['group'])
-            current_pair = 99
-            for pair_number, pair in enumerate(schedule[subject['group']][min_week][min_day]):
-                if pair['id'] == None:
-                    if abs(avg_pair_number - pair_number) < abs(avg_pair_number - current_pair):
-                        current_pair = pair_number
-            classroom = find_classroom(schedule, classrooms, min_week, min_day, current_pair, group_counts[subject['group']])
-            insert_cell_db(groups_id[subject['group']], min_week, min_day, current_pair, subject['id'], classroom, project_id)
-            schedule = get_schedule(project_id, groups)
-
-
-def find_classroom(schedule, classrooms, week, day, pair, min_count):
-    free_classrooms = []
-    for classroom in classrooms:
-        if classroom['size'] < min_count:
-            continue
-        for i in schedule:
-            if schedule[i][week][day][pair]['classroom'] == classroom['name']:
-                continue
-        return classroom['id']
-
-
-def get_avg_group_pair_number(schedule, group):
-    all_pair_numbers = []
-    for week in schedule[group]:
-        for day in week:
-            for pair in day:
-                if pair['id'] != None and pair['group'] == group:
-                    all_pair_numbers.append(pair['pair_number'])
-    if not all_pair_numbers:
-        return 3
-    return int( sum(all_pair_numbers) / len(all_pair_numbers) )
-
-
-def get_day_with_min_pairs(schedule, group):
-    min_week = 0
-    min_day = 0
-    min_pairs = 99
-    for week_number, week in enumerate(schedule[subject['group']]):
-        for day_number, day in enumerate(week):
-            pairs_in_day = 0
-            for pair in day:
-                if pair['id'] != None and pair['group'] == group:
-                    pairs_in_day += 1
-            if pairs_in_day < min_pairs:
-                min_week = week_number
-                min_day = day_number
-                min_pairs = pairs_in_day
-    return min_week, min_day
-
-
 @projects.route('/project', methods=['GET', 'POST'])
 def project():
     if not 'loggedin' in session:
@@ -137,6 +56,55 @@ def project():
     if not check_user(session['id'], project_id):
         return jsonify({'error': 'У вас нет доступа к этому проекту'}), 403
 
+    return render_template_project(project_id, session['id'])
+
+
+@projects.route('/find_collisions', methods=['GET'])
+def find_all_collisions():
+    project_id = request.args.get('project_id')
+    text = ''
+    subject_collisions, classroom_collisions, teacher_collisions = find_collisions(project_id)
+    if any(i for i in subject_collisions):
+        text += '<h2>Предметы:</h2>'
+        subject_headers = ['Указаны лишние пары', 'Большая разница между числом пар в 1 и 2 неделях', 'Не выставлены предметы']
+        for i in range(len(subject_collisions)):
+            if subject_collisions[i]:
+                text += f'<h4>{subject_headers[i]}:</h4><ul style="padding-left: 30px;">'
+                for pair in subject_collisions[i]:
+                    text += f'<li>{pair}</li>'
+                text += '</ul>'
+
+    if any(i for i in classroom_collisions):
+        text += '<h2>Аудитории:</h2>'
+        classroom_headers = ['Аудитория уже занята', 'Аудитория слишком маленькая']
+        for i in range(len(classroom_collisions)):
+            if classroom_collisions[i]:
+                text += f'<h4>{classroom_headers[i]}:</h4><ul style="padding-left: 30px;">'
+                for pair in classroom_collisions[i]:
+                    text += f'<li>Аудитория {pair["classroom"]}: {pair["group"]} {pair["subject"]}<br>' \
+                            f'Неделя: {pair["week"] + 1} День: {pair["day_number"]} Пара: {pair["pair_number"]}</li>'
+                text += '</ul>'
+
+    if teacher_collisions:
+        text += '<h2>Преподаватели:</h2><h4>Преподаватель занят в этот день</h4><ul style="padding-left: 30px;">'
+        for pair in teacher_collisions[i]:
+            text += f'<li>{pair[0]}: {pair[1]["group"]} {pair[1]["subject"]}<br>' \
+                    f'Неделя: {pair[1]["week"] + 1} День: {pair[1]["day_number"]} Пара: {pair[1]["pair_number"]}</li>'
+        text += '</ul>'
+    
+    if not text:
+        text = '<h1>Колиизий не найдено</h1>'
+    
+    return text, 200 
+
+
+@projects.route('/automatic_create_chedule', methods=['POST'])
+def automatic_create_chedule():
+    if not 'loggedin' in session:
+        return redirect(url_for('auth.login'))
+    
+    project_id = request.form['project_id']
+    create_simple_schedule(project_id)
     return render_template_project(project_id, session['id'])
 
 
